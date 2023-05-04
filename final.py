@@ -26,7 +26,7 @@ gbdt = GradientBoostingClassifier(loss='deviance', learning_rate=0.1, n_estimato
                                   )
 
 model = gbdt.fit(x_train, y_train)
-joblib.dump(model, 'GBDT2')   # <----------------記得改檔名
+joblib.dump(model, 'ML\FinalProject\\GBDT2')   # <----------------記得改檔名
 y_train_pred = gbdt.predict(x_train)
 acc_train = gbdt.score(x_train, y_train)
 mae_on_train = mean_absolute_error(y_train, y_train_pred)
