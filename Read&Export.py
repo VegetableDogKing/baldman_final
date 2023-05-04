@@ -8,7 +8,7 @@ def OutputCSV(data):
     print('Export Succeeded: ' + Result)
 
 '''讀檔'''
-loaded_model = joblib.load('GBDT2')  # 把模型輸在這裡
+loaded_model = joblib.load('ML\FinalProject\'GBDT2')  # 把模型輸在這裡
 data = pd.read_csv("ML\FinalProject\\test.csv", sep = ",") #測試檔案
 
 tags = data.columns
