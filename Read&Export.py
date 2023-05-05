@@ -6,12 +6,12 @@ file_name = 'GBDT_100_5' # 把模型輸在這裡
 
 #產出CSV檔                
 def OutputCSV(data: pd.DataFrame):   
-    Result ='ML\FinalProject\\' + file_name + '.csv'
+    Result ='ML\FinalProject\\outputs\\' + file_name + '.csv'
     data.to_csv(Result, index=False)
     print('Export Succeeded: ' + Result)
 
 '''讀檔'''
-loaded_model = joblib.load('ML\FinalProject\\' + file_name)  
+loaded_model = joblib.load('ML\FinalProject\\models\\' + file_name)  
 enc_arr = joblib.load('ML\FinalProject\\EncodeArray')
 data = pd.read_csv("ML\FinalProject\\test.csv", sep = ",") #測試檔案
 data_train = pd.read_csv("ML\FinalProject\\train.csv", sep = ",")

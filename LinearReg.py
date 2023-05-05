@@ -17,7 +17,7 @@ arr = []
 X, arr = preprocess(data, arr, y)
 
 model = LinearRegression().fit(X, y) # 可改
-joblib.dump(model, 'ML\FinalProject\\models' + model_name)  
+joblib.dump(model, 'ML\FinalProject\\models\\' + model_name)  
 y_pred = model.predict(X)
 mae_on_train = mean_absolute_error(y, y_pred)
 

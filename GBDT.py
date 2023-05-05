@@ -26,7 +26,7 @@ gbdt = GradientBoostingRegressor(loss='absolute_error', learning_rate=0.1, n_est
                                   )
 
 model = gbdt.fit(X, y)
-joblib.dump(model, 'ML\FinalProject\\models' + model_name)  
+joblib.dump(model, 'ML\FinalProject\\models\\' + model_name)  
 y_train_pred = gbdt.predict(x_train)
 acc_train = gbdt.score(x_train, y_train)
 mae_on_train = mean_absolute_error(y_train, y_train_pred)
