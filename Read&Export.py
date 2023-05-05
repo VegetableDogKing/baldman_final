@@ -2,7 +2,7 @@ import numpy as np
 import joblib
 import pandas as pd
 from util import preprocess
-file_name = 'linear_regression' # 把模型輸在這裡
+file_name = 'GBDT_100_5' # 把模型輸在這裡
 
 #產出CSV檔                
 def OutputCSV(data: pd.DataFrame):   

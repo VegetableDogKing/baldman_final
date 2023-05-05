@@ -3,7 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import collections
 import category_encoders as ce
-from sklearn.preprocessing import StandardScaler,MinMaxScaler
+from sklearn.preprocessing import StandardScaler
 
 data = pd.read_csv("ML\FinalProject\\train.csv", sep = ",")
 
