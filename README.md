@@ -1,3 +1,10 @@
+# To-Do List
+1. 加權
+2. 刪離群值
+3. transformation
+4. encoding 改一下
+5. desciption
+
 # 更新動態
 ### 2023/5/4  
 * 測試 n_estimator = 2000, max_depth = 6  
