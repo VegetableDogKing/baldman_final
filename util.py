@@ -4,14 +4,14 @@ import matplotlib.pyplot as plt
 import collections
 import category_encoders as ce
 from sklearn.preprocessing import StandardScaler
-
+import seaborn as sns
 data = pd.read_csv("ML\FinalProject\\train.csv", sep = ",")
 
 def preprocess(data: pd.DataFrame, encode_arr = [], y = None):
     target_encode = ['Album_type','Licensed','official_video', 'Track', 'Album', 'Channel', 'Composer', 'Artist']
-    data['Album_type'].fillna('album', inplace = True)
+    '''data['Album_type'].fillna('album', inplace = True)
     data['Licensed'].fillna(True, inplace = True)
-    data['official_video'].fillna(True, inplace = True)
+    data['official_video'].fillna(True, inplace = True)'''
     tags = data.columns
     for i in range(13):
         data[tags[i]].fillna(np.mean(data[tags[i]]), inplace = True)
@@ -23,19 +23,24 @@ def preprocess(data: pd.DataFrame, encode_arr = [], y = None):
             target_enc.fit(data[i], y)
             data[i] = target_enc.transform(data[i])
             encode_arr.append(target_enc)  
-        X = data[tags[0:12]].join(data[target_encode])
+        X = data[tags[0:13]].join(data[target_encode])
         X = scaler.fit_transform(X)     
     else:
         for i in range(len(target_encode)):
             data[target_encode[i]] = encode_arr[i].transform(data[target_encode[i]])
-        X = data[tags[0:12]].join(data[target_encode])
+        X = data[tags[0:13]].join(data[target_encode])
         X = scaler.fit_transform(X) 
     
     return X, encode_arr
     
-def performance():
-    pass
+def correlation_plot(df_feat: pd.DataFrame):
+    corr_df = df_feat.corr()
+    fig = plt.figure(figsize=(20, 8))
+    sns.heatmap(corr_df,vmax = 1, annot=True,cmap='Blues',fmt='.2f')
+    plt.xticks(rotation = 90, fontsize = 8)
 
+        
+    plt.show()
 '''
 print(collections.Counter(data['Album_type'])) # {'album': 10379, 'single': 3732, nan: 2560, 'compilation': 499}
 print(collections.Counter(data['Licensed']))  # {True: 10260, False: 4317, nan: 2593}
