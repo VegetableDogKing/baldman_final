@@ -5,6 +5,11 @@
 4. encoding 改一下
 5. desciption
 
+# Report 架構
+1. 三種方法: Linear Regression, Softmax, XGboost
+2. 選擇feature方法: 相關係數、PCA、DAE
+3. evaluation: cross validation score
+
 # 更新動態
 ### 2023/5/4  
 * 測試 n_estimator = 2000, max_depth = 6  
