@@ -6,7 +6,7 @@
 5. desciption
 
 # Report 架構
-1. 三種方法: Linear Regression, Softmax, XGboost
+1. 三種方法: Linear Regression(baseline), Softmax, XGboost, RandomForest??
 2. 選擇feature方法: 相關係數、PCA、DAE
 3. evaluation: cross validation score
 
