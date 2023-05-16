@@ -5,7 +5,11 @@ import collections
 import category_encoders as ce
 from sklearn.preprocessing import StandardScaler
 import seaborn as sns
-data = pd.read_csv("ML\FinalProject\\train.csv", sep = ",")
+import os
+absolute_path = os.path.dirname(__file__)
+relative_path = "train.csv"
+file_path = os.path.join(absolute_path, relative_path) 
+data = pd.read_csv(file_path, sep = ",")
 
 def preprocess(data: pd.DataFrame, encode_arr = [], y = None):
     target_encode = ['Album_type','Licensed','official_video', 'Track', 'Album', 'Channel', 'Composer', 'Artist']
@@ -24,23 +28,42 @@ def preprocess(data: pd.DataFrame, encode_arr = [], y = None):
             data[i] = target_enc.transform(data[i])
             encode_arr.append(target_enc)  
         X = data[tags[0:13]].join(data[target_encode])
+        X.pop("Track")
+        X.pop("Album")
+        X.pop("Channel")
+        X.pop("Composer")
+        X.pop("Artist")
         X = scaler.fit_transform(X)     
     else:
         for i in range(len(target_encode)):
             data[target_encode[i]] = encode_arr[i].transform(data[target_encode[i]])
         X = data[tags[0:13]].join(data[target_encode])
+        X.pop("Track")
+        X.pop("Album")
+        X.pop("Channel")
+        X.pop("Composer")
+        X.pop("Artist")
         X = scaler.fit_transform(X) 
-    
+
     return X, encode_arr
     
-def correlation_plot(df_feat: pd.DataFrame):
+def correlation(df_feat: pd.DataFrame):
     corr_df = df_feat.corr()
     fig = plt.figure(figsize=(20, 8))
     sns.heatmap(corr_df,vmax = 1, annot=True,cmap='Blues',fmt='.2f')
     plt.xticks(rotation = 90, fontsize = 8)
-
-        
-    plt.show()
+  
+    # plt.show()
+    
+    corr_df = corr_df[0:1]
+    tags = corr_df.columns
+    for i in range(len(tags)):
+        if(abs(corr_df[tags[i]]['Danceability'])) < 0.09 or (abs(corr_df[tags[i]]['Danceability'])) > 0.7:
+            df_feat.pop(tags[i])
+    tags = df_feat.columns
+    df_feat = np.array(df_feat)
+    
+    return df_feat, tags
 '''
 print(collections.Counter(data['Album_type'])) # {'album': 10379, 'single': 3732, nan: 2560, 'compilation': 499}
 print(collections.Counter(data['Licensed']))  # {True: 10260, False: 4317, nan: 2593}
