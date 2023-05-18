@@ -13,13 +13,10 @@ data = pd.read_csv(file_path, sep = ",")
 
 def preprocess(data: pd.DataFrame, encode_arr = [], y = None):
     target_encode = ['Album_type','Licensed','official_video', 'Track', 'Album', 'Channel', 'Composer', 'Artist']
-    '''data['Album_type'].fillna('album', inplace = True)
-    data['Licensed'].fillna(True, inplace = True)
-    data['official_video'].fillna(True, inplace = True)'''
     tags = data.columns
     for i in range(13):
-        data[tags[i]].fillna(np.mean(data[tags[i]]), inplace = True)
-    data[['Key', 'Duration_ms', 'Views', 'Likes', 'Stream']] = data[['Key', 'Duration_ms', 'Views', 'Likes', 'Stream']].round(0)
+        data[tags[i]].fillna(np.mean(data[tags[i]]), inplace = True)  
+    data[['Key', 'Duration_ms', 'Views', 'Likes', 'Stream']] = data[['Key', 'Duration_ms', 'Views', 'Likes', 'Stream']]
     scaler = StandardScaler()
     if len(encode_arr) == 0:
         for i in target_encode:
@@ -46,7 +43,30 @@ def preprocess(data: pd.DataFrame, encode_arr = [], y = None):
         X = scaler.fit_transform(X) 
 
     return X, encode_arr
+
+def fillna(X: pd.DataFrame, y: pd.DataFrame, Xtest:pd.DataFrame):
+    return X, Xtest
+
+def OneHotEncoding(X: pd.DataFrame, y: pd.DataFrame, Xtest:pd.DataFrame): 
+    oneHotEncoding = ce.OneHotEncoder()
+    oneHotEncoding.fit(X, y)
+    X = oneHotEncoding.transform(X)
+    Xtest = oneHotEncoding.transform(Xtest)
+    return X, Xtest
+
+def CatBoostEncoding(X: pd.DataFrame, y: pd.DataFrame, Xtest:pd.DataFrame):
+    oneHotEncoding = ce.CatBoostEncoder()
+    oneHotEncoding.fit(X, y)
+    X = oneHotEncoding.transform(X)
+    Xtest = oneHotEncoding.transform(Xtest)
+    return X, Xtest
     
+def Standardize(X: pd.DataFrame, Xtest:pd.DataFrame):
+    scaler = StandardScaler()
+    X = scaler.fit_transform(X)
+    Xtest = scaler.fit_transform(Xtest)
+    return X, Xtest
+
 def correlation(df_feat: pd.DataFrame):
     corr_df = df_feat.corr()
     fig = plt.figure(figsize=(20, 8))
@@ -64,6 +84,7 @@ def correlation(df_feat: pd.DataFrame):
     df_feat = np.array(df_feat)
     
     return df_feat, tags
+
 '''
 print(collections.Counter(data['Album_type'])) # {'album': 10379, 'single': 3732, nan: 2560, 'compilation': 499}
 print(collections.Counter(data['Licensed']))  # {True: 10260, False: 4317, nan: 2593}
