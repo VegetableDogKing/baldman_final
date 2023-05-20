@@ -1,14 +1,10 @@
 import numpy as np
 import pandas as pd
-from sklearn.ensemble import GradientBoostingRegressor
-from sklearn.linear_model import LinearRegression
-from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 import joblib
-from sklearn.metrics import mean_absolute_error
 import util
-from sklearn.model_selection import cross_val_score
 from sklearn import metrics
+import lightgbm as lgb
 import os
 from sklearn.decomposition import PCA
 
@@ -31,18 +27,22 @@ for feature in Catarr:
     X[feature], Xtest[feature] = util.CatBoostEncoding(X[feature], y, Xtest[feature])
 
 X, Xtest = util.fillna(X, y, Xtest)
-
 X, Xtest = util.Standardize(X, Xtest)
 
 '''models'''
-model = LinearRegression().fit(X, y)
-y_pred = model.predict(X)
-mae = mean_absolute_error(y, y_pred)
-print(mae)
+'''
+linear_model = util.LinearReg(X, y)
+util.CVScore(X, y, linear_model)
 
-model = LogisticRegression(random_state=0, max_iter=100).fit(X, y)
-y_pred = model.predict(X)
-mae = mean_absolute_error(y, y_pred)
-print(mae)
-y_pred = model.predict(Xtest)
-util.OutputCSV(y_pred) # 2.21
+# util.OutputCSV(y_pred)  # 2.21 on logistic
+
+gbr_model = util.GBR(X, y)
+util.CVScore(X, y, gbr_model)
+# util.ModelPrediction(Xtest, None, gbr_model, is_testdata=True, file_name='GBR_1100_4')
+
+hgbr_model = util.HGBR(X, y)
+util.CVScore(X, y, hgbr_model) # 1.1
+'''
+gbdt_model = util.GBDT(X, y)
+util.CVScore(X, y, gbdt_model)
+util.ModelPrediction(Xtest, None, gbdt_model, is_testdata=True, file_name='GBDT_1100_4')

@@ -5,6 +5,13 @@ import collections
 import category_encoders as ce
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
+from sklearn.ensemble import GradientBoostingRegressor
+from sklearn.ensemble import GradientBoostingClassifier
+from sklearn.ensemble import HistGradientBoostingRegressor
+from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import mean_absolute_error
+from sklearn.model_selection import cross_val_score
 import seaborn as sns
 import os
 file_name = 'Logistic_Regression'
@@ -13,39 +20,6 @@ absolute_path = os.path.dirname(__file__)
 relative_path = "train.csv"
 file_path = os.path.join(absolute_path, relative_path) 
 data = pd.read_csv(file_path, sep = ",")
-
-def preprocess(data: pd.DataFrame, encode_arr = [], y = None):
-    target_encode = ['Album_type','Licensed','official_video', 'Track', 'Album', 'Channel', 'Composer', 'Artist']
-    tags = data.columns
-    for i in range(13):
-        data[tags[i]].fillna(np.mean(data[tags[i]]), inplace = True)  
-    data[['Key', 'Duration_ms', 'Views', 'Likes', 'Stream']] = data[['Key', 'Duration_ms', 'Views', 'Likes', 'Stream']]
-    scaler = StandardScaler()
-    if len(encode_arr) == 0:
-        for i in target_encode:
-            target_enc = ce.TargetEncoder(cols=i, drop_invariant=True)
-            target_enc.fit(data[i], y)
-            data[i] = target_enc.transform(data[i])
-            encode_arr.append(target_enc)  
-        X = data[tags[0:13]].join(data[target_encode])
-        X.pop("Track")
-        X.pop("Album")
-        X.pop("Channel")
-        X.pop("Composer")
-        X.pop("Artist")
-        X = scaler.fit_transform(X)     
-    else:
-        for i in range(len(target_encode)):
-            data[target_encode[i]] = encode_arr[i].transform(data[target_encode[i]])
-        X = data[tags[0:13]].join(data[target_encode])
-        X.pop("Track")
-        X.pop("Album")
-        X.pop("Channel")
-        X.pop("Composer")
-        X.pop("Artist")
-        X = scaler.fit_transform(X) 
-
-    return X, encode_arr
 
 def fillna(X: pd.DataFrame, y: pd.DataFrame, Xtest:pd.DataFrame):
     for feature in X.columns:
@@ -82,8 +56,61 @@ def _PCA(X: pd.DataFrame, Xtest:pd.DataFrame, components):
     X, Xtest = pca.transform(X), pca.transform(Xtest)
     return X, Xtest
 
+def CVScore(X: pd.DataFrame, y: pd.DataFrame, model): 
+    scores = -cross_val_score(model, X, y, cv=5, scoring = 'neg_mean_absolute_error')
+    print("%0.8f MAE with a standard deviation of %0.8f" % (scores.mean(), scores.std()))
+    
+def LinearReg(X: pd.DataFrame, y: pd.DataFrame):
+    model = LinearRegression().fit(X, y)
+    ModelPrediction(X, y, model)
+    return model
+    
+def LogisticReg(X: pd.DataFrame, y: pd.DataFrame):
+    model = LogisticRegression(max_iter=1000).fit(X, y)
+    ModelPrediction(X, y, model)
+    return model
+
+def GBR(X: pd.DataFrame, y: pd.DataFrame):
+    gbr = GradientBoostingRegressor(loss='absolute_error', learning_rate=0.05, n_estimators=1100, subsample=1
+                                  , min_samples_split=2, min_samples_leaf=1, max_depth=4
+                                  , init=None, random_state=None, max_features=None
+                                  , verbose=1, max_leaf_nodes=None, warm_start=False, n_jobs=-1
+                                  )
+    model = gbr.fit(X, y)
+    ModelPrediction(X, y, model)
+    return model
+
+def GBDT(X: pd.DataFrame, y: pd.DataFrame):
+    gbdt = GradientBoostingClassifier(loss='log_loss', learning_rate=0.01, n_estimators=1000, subsample=1.0,
+                                      criterion='friedman_mse', min_samples_split=2, min_samples_leaf=1,
+                                      min_weight_fraction_leaf=0.0, max_depth=4, min_impurity_decrease=0.0,
+                                      init=None, random_state=None, max_features='sqrt', verbose=0, max_leaf_nodes=None,
+                                      warm_start=False, validation_fraction=0.1, n_iter_no_change=None, tol=0.0001, ccp_alpha=0.0)
+    model = gbdt.fit(X, y)
+    ModelPrediction(X, y, model)
+    return model
+
+def HGBR(X: pd.DataFrame, y: pd.DataFrame):
+    hgbr = HistGradientBoostingRegressor(loss='squared_error', quantile=None, learning_rate=0.1, max_iter=1000,
+                                         max_leaf_nodes=31, max_depth=4, min_samples_leaf=20, l2_regularization=0.0,
+                                         max_bins=255, categorical_features=None, monotonic_cst=None, interaction_cst=None,
+                                         warm_start=False, early_stopping='auto', scoring='loss', validation_fraction=0.1,
+                                         n_iter_no_change=10, tol=1e-07, verbose=0, random_state=None)
+    model = hgbr.fit(X, y)
+    ModelPrediction(X, y, model)
+    return model
+
+def ModelPrediction(X:pd.DataFrame, y:pd.DataFrame, model, is_testdata=False, file_name = None): 
+    y_pred = model.predict(X)
+    if is_testdata:
+        OutputCSV(y_pred, file_name)
+        return
+    mae = mean_absolute_error(y, y_pred)
+    print('train model mae = %0.8f' % mae)
+    return y_pred
+
 #產出CSV檔                
-def OutputCSV(y_pred: pd.DataFrame):
+def OutputCSV(y_pred: pd.DataFrame, file_name):
     label = range(17170,23485)
     df = {"id":label, "Danceability": y_pred}
     df = pd.DataFrame(df)
