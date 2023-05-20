@@ -3,6 +3,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import collections
 import category_encoders as ce
+import seaborn as sns
+import os
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from sklearn.ensemble import GradientBoostingRegressor
@@ -12,13 +14,13 @@ from sklearn.linear_model import LinearRegression
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import mean_absolute_error
 from sklearn.model_selection import cross_val_score
-import seaborn as sns
-import os
-file_name = 'Logistic_Regression'
+pd.set_option('mode.chained_assignment', None)
+file_name = 'GBR_test'
 
 absolute_path = os.path.dirname(__file__)
 relative_path = "train.csv"
 file_path = os.path.join(absolute_path, relative_path) 
+outputs_path = os.path.join(absolute_path, 'outputs//')
 data = pd.read_csv(file_path, sep = ",")
 
 def fillna(X: pd.DataFrame, y: pd.DataFrame, Xtest:pd.DataFrame):
@@ -26,6 +28,54 @@ def fillna(X: pd.DataFrame, y: pd.DataFrame, Xtest:pd.DataFrame):
         X[feature].fillna(np.mean(X[feature]), inplace = True)
         Xtest[feature].fillna(np.mean(Xtest[feature]), inplace = True)    
     return X, Xtest
+
+def fill(data: pd.DataFrame, train_columns = []):
+    for i in train_columns:
+        if i not in data.columns:
+            train_columns.remove(i)
+            
+    if data[train_columns[0]].isnull().sum() != 0:
+        length = len(train_columns)
+        train = data[train_columns]
+        test = train[train[train_columns[0]].isnull()]
+        for i in range(1, length, 1):
+            if train_columns[i] in test.columns:
+                test = test[test[train_columns[i]].notnull()]
+        for i in range(0, length, 1):
+            if train_columns[i] in train.columns:
+                train = train[train[train_columns[i]].notnull()]
+        
+        train_y = train[train_columns[0]]
+        train_X = train.drop(train_columns[0], axis=1)
+        test_X = test.drop(train_columns[0], axis=1)
+        
+        if test_X.empty == False:
+            lr = LinearRegression()
+            lr.fit(train_X, train_y)
+            y_pred = lr.predict(test_X)
+            
+            index = test.loc[test[train_columns[0]].isnull(), train_columns[0]].index
+            for i in range(len(index)):
+                data[train_columns[0]][index[i]] = y_pred[i]
+                
+    return data
+
+def fillna_LinReg(data: pd.DataFrame):      
+    Energy_columns = ['Energy', 'Loudness', 'Acousticness', 'Valence']
+    Loudness_columns = ['Loudness', 'Danceability', 'Energy', 'Acousticness', 'Instrumentalness', 'Valence']
+    Speechiness_columns = ['Speechiness', 'Danceability']
+    Acousticness_columns = ['Acousticness', 'Danceability', 'Energy', 'Loudness', 'Instrumentalness', 'Valence']
+    Instrumentalness_columns = ['Instrumentalness', 'Danceability', 'Loudness', 'Acousticness', 'Valence']
+    Valence_columns = ['Valence', 'Danceability', 'Energy', 'Loudness', 'Acousticness', 'Instrumentalness']
+           
+    data = fill(data, Energy_columns)
+    data = fill(data, Loudness_columns)
+    data = fill(data, Speechiness_columns)
+    data = fill(data, Acousticness_columns)
+    data = fill(data, Instrumentalness_columns)
+    data = fill(data, Valence_columns)
+    
+    return data
 
 def OneHotEncoding(X: pd.DataFrame, y: pd.DataFrame, Xtest:pd.DataFrame): 
     oneHotEncoding = ce.OneHotEncoder()
@@ -74,7 +124,7 @@ def GBR(X: pd.DataFrame, y: pd.DataFrame):
     gbr = GradientBoostingRegressor(loss='absolute_error', learning_rate=0.05, n_estimators=1100, subsample=1
                                   , min_samples_split=2, min_samples_leaf=1, max_depth=4
                                   , init=None, random_state=None, max_features=None
-                                  , verbose=1, max_leaf_nodes=None, warm_start=False, n_jobs=-1
+                                  , verbose=1, max_leaf_nodes=None, warm_start=False
                                   )
     model = gbr.fit(X, y)
     ModelPrediction(X, y, model)
@@ -112,9 +162,9 @@ def ModelPrediction(X:pd.DataFrame, y:pd.DataFrame, model, is_testdata=False, fi
 #產出CSV檔                
 def OutputCSV(y_pred: pd.DataFrame, file_name):
     label = range(17170,23485)
-    df = {"id":label, "Danceability": y_pred}
+    df = {"id":label, "Danceability": np.round(y_pred)}
     df = pd.DataFrame(df)
-    Result ='ML\FinalProject\\outputs\\' + file_name + '.csv'
+    Result = outputs_path + file_name + '.csv'
     df.to_csv(Result, index=False)
     print('Export Succeeded: ' + Result)
     return
