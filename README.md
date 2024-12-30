@@ -1,16 +1,18 @@
-# To-Do List
+# Danceability Estimation
+
+## To-Do List
 1. 加權
 2. 刪離群值
 3. transformation
 4. encoding 改一下
 5. desciption
 
-# Report 架構
+## Report 架構
 1. 三種方法: Linear Regression(baseline), Softmax, XGboost, RandomForest??
 2. 選擇feature方法: 相關係數、PCA、DAE
 3. evaluation: cross validation score
 
-# 更新動態
+## 更新動態
 ### 2023/5/4  
 * 測試 n_estimator = 2000, max_depth = 6  
 ### 2023/5/5  
